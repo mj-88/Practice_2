@@ -38,15 +38,15 @@ class LFUCache:
         """캐시에 데이터 추가 (LFU 적용)"""
         key = (segnumber, videonumber, tileId)
 
-
-            # 🔹 이미 캐시에 있는 데이터인지 확인 (LFU 정책 적용)
+        # 🔹 이미 캐시에 있는 데이터인지 확인 (LFU 정책 적용)
         existing_value = self.get(segnumber, videonumber, tileId)
         if existing_value is not None:
             self.hit +=1
             return  # 이미 존재하는 데이터이므로 빈도만 증가하고 종료
+        
         self.miss+=1
 
-        # 캐시 공간 확보: 현재 크기가 초과되면 LFU 삭제
+        # 캐시 공간 확보: 현재 크기가 초과되면 LFU에 따라서서 삭제
         while self.current_size - fileSize < 0:
             if not self.cache:
                 print('not self.cache')
@@ -55,7 +55,7 @@ class LFUCache:
             # 🔹 먼저 min_freq를 찾는다
             min_freq = min(self.freq_map.keys())  # 현재 존재하는 빈도 중 가장 작은 값 찾기
 
-# 🔹 빈도 리스트가 비어 있다면 삭제하고 다시 찾음
+            # 🔹 빈도 리스트가 비어 있다면 삭제하고 다시 찾음
             while min_freq in self.freq_map and not self.freq_map[min_freq]:
                 del self.freq_map[min_freq]
                 if not self.freq_map:
@@ -63,16 +63,10 @@ class LFUCache:
                     return  # freq_map이 완전히 비었다면 종료
                 min_freq = min(self.freq_map.keys())  # 다시 최소 빈도 찾기
 
-
             # 🔹 가장 적게 사용된 항목 중 가장 오래된 항목 제거 (LFU 정책)
             lfu_key, _ = self.freq_map[min_freq].popitem(last=False)
             _, _, removed_size = self.cache[lfu_key]
-            
-            #lfu_cache.display_cache()
-            #print(f"❌ LFU 제거: Segment={lfu_key[0]}, Video={lfu_key[1]}, TileID={lfu_key[2]}, Size={removed_size} bytes, Frequency={min_freq}")
-            
-            
-
+                        
             del self.cache[lfu_key]
             self.current_size += removed_size  # 캐시 크기에서 제거된 파일 크기만큼 증가
 
@@ -134,3 +128,6 @@ for data in data_list:
 hit_rate = (lfu_cache.hit/119616 )*100
 print('cache hit : '+ str(lfu_cache.hit)+ ' cache miss : '+ str(lfu_cache.miss)+ ' hit rate : '+ str(hit_rate))
 
+
+
+#print(f"❌ LFU 제거: Segment={lfu_key[0]}, Video={lfu_key[1]}, TileID={lfu_key[2]}, Size={removed_size} bytes, Frequency={min_freq}")
